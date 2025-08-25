@@ -1,0 +1,4 @@
+[deps]
+Ferrite = "c061ca5d-56c9-439f-9c0e-210fe06d3992"
+FerriteGmsh = "4f95f4f8-b27c-4ae5-9a39-ea55e634e36b"
+Gecko = "1207f3c9-c989-46bd-b274-f7b835830eca"
