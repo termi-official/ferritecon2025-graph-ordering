@@ -48,8 +48,33 @@ for fname in filter(fname->startswith(fname, "heart2d-initial-") && endswith(fna
     for cellid in 1:getncells(grid)
         for ni in nzrange(neighbormatrix, cellid)
             add_directed_edge!(gg, cellid, neighbormatrix.rowval[ni])
+            @info cellid-1 => neighbormatrix.rowval[ni]-1
         end
     end
+
+    # neighbors = Int[]
+    # top = ExclusiveTopology(grid)
+    # gg = GeckoGraph(getncells(grid))
+    # # Add connectivity
+    # for cellid in 1:getncells(grid)
+    #     # raw_neighbors = getneighborhood(top, grid, CellIndex(cellid))
+    #     # for ni in sort(raw_neighbors)
+    #     #     add_directed_edge!(gg, cellid, ni)
+    #     #     @info cellid-1 => ni-1
+    #     # end
+
+    #     empty!(neighbors)
+    #     for ei in 1:3
+    #         for ni in getneighborhood(top, grid, EdgeIndex(cellid, ei))
+    #             push!(neighbors, ni[1])
+    #         end
+    #     end
+    #     sort!(neighbors)
+    #     for ni in neighbors
+    #         add_directed_edge!(gg, cellid, ni)
+    #         @info cellid-1 => ni-1
+    #     end
+    # end
 
     # Optimize
     logger     = ProgressCallbacks()
@@ -58,7 +83,13 @@ for fname in filter(fname->startswith(fname, "heart2d-initial-") && endswith(fna
     order!(gg, GraphOrderingParameters(;iterations=4, window=4), logger)
 
     # Store
-    cells = [grid.cells[new_index(gg, cellid)] for cellid in 1:getncells(grid)]
-    newgrid = Grid(cells, grid.nodes)
+    newcells = copy(grid.cells)
+    for oldindex in 1:getncells(grid)
+        newcells[new_index(gg, oldindex)] = getcells(grid, oldindex)
+    end
+    newgrid = Grid(newcells, grid.nodes)
     jldsave(joinpath(meshpath, "heart2d-optimized-$sz.jld2"); grid=newgrid)
+
+    # VTKGridFile("FerriteCon2025-Debug-Optimal-$sz.vtu", newgrid) do vtk
+    # end
 end
