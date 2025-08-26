@@ -39,10 +39,10 @@ function optimize_nodes!(g)
     reorder_nodes!(g, ordering2)
 end
 
-grid = generate_grid(Quadrilateral, (20, 20))
+# grid = generate_grid(Quadrilateral, (20, 20))
 
-o = shuffle(Vector(1:getnnodes(grid)))
-reorder_nodes!(grid, o)
+# o = shuffle(Vector(1:getnnodes(grid)))
+# reorder_nodes!(grid, o)
 
-optimize_nodes!(grid)
+# optimize_nodes!(grid)
 # optimize_nodes!(grid)
