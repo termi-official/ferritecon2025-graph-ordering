@@ -1,6 +1,7 @@
-using BenchmarkTools, JLD2
+using BenchmarkTools, JLD2, Metis
 
 include("heat_assembly.jl")
+include("optimization_utils.jl")
 
 meshpath = joinpath("data", "meshes")
 
@@ -14,11 +15,11 @@ end
 gen_times = []
 gen_num_elements = []
 
-# optr_times = []
-# optr_num_elements = []
-
-opt_times = []
+opt1_times = []
+opt2_times = []
+opt3_times = []
 opt_num_elements = []
+
 
 for fname in readdir(meshpath)
     # 
@@ -36,20 +37,27 @@ for fname in readdir(meshpath)
     elseif startswith(fname, "heart2d-optimized-")
         grid = load(joinpath(meshpath, fname), "grid")
         reverse_triangles!(grid)
-        cellvalues, assembler, Ke, fe, dh = setup_heat_assembly(grid, RefTriangle)
-        opt_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
-        @info opt_time
-        push!(opt_times, opt_time)
         push!(opt_num_elements, getncells(grid))
 
-        # reverse!(grid.cells)
-        # cellvalues, assembler, Ke, fe, dh = setup_heat_assembly(grid, RefTriangle)
-        # optr_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
-        # @info optr_time
-        # push!(optr_times, optr_time)
-        # push!(optr_num_elements, getncells(grid))
+        begin
+            cellvalues, assembler, Ke, fe, dh = setup_heat_assembly(grid, RefTriangle)
+            opt_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
+            @info opt_time
+            push!(opt1_times, opt_time)
+        end
 
-        
+        begin
+            optimize_nodes!(grid)
+            cellvalues, assembler, Ke, fe, dh = setup_heat_assembly(grid, RefTriangle)
+            opt_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
+            @info opt_time
+            push!(opt2_times, opt_time)
+
+            renumber!(dh, DofOrder.Ext{Metis}())
+            opt_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
+            @info opt_time
+            push!(opt3_times, opt_time)
+        end
     end
 end
 
@@ -64,7 +72,9 @@ with_theme(theme_ggplot2()) do
     f = Figure(fontsize=22)
     ax = Axis(f[1,1], xlabel="Number of elements", ylabel="Assembly time in seconds", xscale=log2, yscale=log2)
     scatterlines!(gen_num_elements[gen_order], map(x->x.time, median.(gen_times))[gen_order] ./ 1e9, label="Standard ordering")
-    scatterlines!(opt_num_elements[opt_order], map(x->x.time, median.(opt_times))[opt_order] ./ 1e9, label="Optimized element ordering")
+    scatterlines!(opt_num_elements[opt_order], map(x->x.time, median.(opt1_times))[opt_order] ./ 1e9, label="Optimized E ordering")
+    scatterlines!(opt_num_elements[opt_order], map(x->x.time, median.(opt2_times))[opt_order] ./ 1e9, label="Optimized E+N ordering")
+    scatterlines!(opt_num_elements[opt_order], map(x->x.time, median.(opt3_times))[opt_order] ./ 1e9, label="Optimized E+N+D ordering")
     # scatterlines!(optr_num_elements[opt_order], map(x->x.time, median.(optr_times))[opt_order] ./ 1e9, label="Rev. optimized element ordering")
     axislegend(ax, position=:lt)
 

@@ -47,7 +47,7 @@ with_theme(theme_ggplot2()) do
         style = Ann.Styles.LineArrow(),
         labelspace = :data
     )
-    
+
     save("random-assembly-peformance.svg", f)
     f
 end
