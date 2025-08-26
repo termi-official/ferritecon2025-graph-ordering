@@ -1,8 +1,8 @@
 using Ferrite, SparseArrays
 
-function setup_heat_assembly(grid)
-    ip = Lagrange{RefQuadrilateral, 1}()
-    qr = QuadratureRule{RefQuadrilateral}(2)
+function setup_heat_assembly(grid, ref_type)
+    ip = Lagrange{ref_type, 1}()
+    qr = QuadratureRule{ref_type}(2)
     cellvalues = CellValues(qr, ip);
 
     dh  = DofHandler(grid)
