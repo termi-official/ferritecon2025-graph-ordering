@@ -1,4 +1,6 @@
-using Ferrite, SparseArrays, MatrixBandwidth
+using Ferrite, SparseArrays
+# using MatrixBandwidth
+using CuthillMcKee
 
 function reorder_nodes_on_cell(cell::CellType, ordering) where CellType <: Ferrite.AbstractCell
     CellType(map(n->ordering[n], cell.nodes))
@@ -29,20 +31,28 @@ function optimize_nodes!(g)
 
     incidence_matrix = SparseArrays.spzeros!(Bool, I, J, getnnodes(g), getnnodes(g))
     fill!(incidence_matrix.nzval, true)
-    res = minimize_bandwidth(incidence_matrix, Minimization.CuthillMcKee())
-    @show res
-    ordering = res.ordering
+    @info "Compute ordering..."
+    # res = minimize_bandwidth(incidence_matrix, Minimization.CuthillMcKee())
+    # @show res
+    # ordering = res.ordering
+    ordering = symrcm(incidence_matrix, false, false)
+    # ordering = [getnnodes(g)-o+1 for o in ordering]
+
     ordering2 = copy(ordering)
     for i in eachindex(ordering)
         ordering2[ordering[i]] = i
     end
+    @info "Reorder..."
     reorder_nodes!(g, ordering2)
 end
 
-# grid = generate_grid(Quadrilateral, (20, 20))
+grid = generate_grid(Quadrilateral, (20, 20))
 
-# o = shuffle(Vector(1:getnnodes(grid)))
-# reorder_nodes!(grid, o)
+o = shuffle(Vector(1:getnnodes(grid)))
+reorder_nodes!(grid, o)
 
-# optimize_nodes!(grid)
-# optimize_nodes!(grid)
+optimize_nodes!(grid)
+optimize_nodes!(grid)
+
+VTKGridFile("FerriteCon-Debug", grid) do vtk
+end

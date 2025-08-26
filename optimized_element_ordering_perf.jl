@@ -12,8 +12,8 @@ function reverse_triangles!(grid)
     end
 end
 
-gen_times = []
-gen_num_elements = []
+# gen_times = []
+# gen_num_elements = []
 
 opt1_times = []
 opt2_times = []
@@ -54,6 +54,8 @@ for fname in readdir(meshpath)
             push!(opt2_times, opt_time)
 
             renumber!(dh, DofOrder.Ext{Metis}())
+            ## Create a new compatible assembler
+            assembler = start_assemble(allocate_matrix(dh), zeros(ndofs(dh)))
             opt_time = @benchmark assemble_heat_global($cellvalues, $assembler, $Ke, $fe, $dh)
             @info opt_time
             push!(opt3_times, opt_time)

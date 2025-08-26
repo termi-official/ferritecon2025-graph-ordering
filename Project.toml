@@ -1,6 +1,7 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+CuthillMcKee = "17f17636-5e38-52e3-a803-7ae3aaaf3da9"
 Ferrite = "c061ca5d-56c9-439f-9c0e-210fe06d3992"
 FerriteGmsh = "4f95f4f8-b27c-4ae5-9a39-ea55e634e36b"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
