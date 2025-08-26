@@ -30,3 +30,6 @@ JuliaLocalPreferences.toml
 *.jld2
 *.msh
 *.vtu
+
+*.eps
+*.svg
